@@ -1,7 +1,7 @@
 // ===================================================
 // Gemini API 호출 서버리스 함수 (Vercel Serverless Function)
 //
-// 무료 티어로 사용 가능한 최신 모델 `gemini-2.5-flash`를 호출합니다.
+// 지정된 최신 모델 `gemini-3.8-flash`를 호출합니다.
 // API 키는 환경변수 `process.env.GEMINI_API_KEY`에서 안전하게 가져옵니다.
 // ===================================================
 
@@ -26,7 +26,7 @@ export default async function handler(req, res) {
   // 개인정보 보호 (AGENTS.md 규칙: 식별 정보 제외 및 학생 대상 따뜻한 피드백)
   const systemPrompt = "너는 친절하고 격려를 아끼지 않는 초·중등학교 선생님 AI 도우미야. 학생이 작성한 학습 메모나 소감을 읽고, 따뜻하고 긍정적인 격려와 호기심을 북돋아주는 피드백 코멘트를 1~2문장으로 한국어로 친절하게 작성해 줘. 이모지도 적절하게 1~2개 곁들여 줘.";
 
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`;
 
   try {
     const response = await fetch(endpoint, {
