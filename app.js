@@ -15,7 +15,9 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 import { 
   getAuth, 
-  signInAnonymously, 
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
   onAuthStateChanged 
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 
@@ -32,43 +34,52 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
 const memosCollection = collection(db, "memos");
 
 // --- 로그인 사용자 및 닉네임 관리 ---
 let currentUser = null;
 let currentNickname = "";
 
-// 익명 닉네임 생성기 (친근한 동물 별명 + 고유 해시)
-const ANIMALS = ["호랑이", "토끼", "다람쥐", "사자", "판다", "펭귄", "곰", "여우", "코알라", "사슴", "돌고래", "수달"];
-const ADJECTIVES = ["행복한", "씩씩한", "지혜로운", "다정한", "용감한", "활기찬", "빛나는", "꿈꾸는", "친절한"];
-
-function generateNickname(uid) {
-  let hash = 0;
-  for (let i = 0; i < uid.length; i++) {
-    hash = (hash << 5) - hash + uid.charCodeAt(i);
-    hash |= 0;
-  }
-  const adj = ADJECTIVES[Math.abs(hash) % ADJECTIVES.length];
-  const animal = ANIMALS[Math.abs(hash >> 3) % ANIMALS.length];
-  const shortId = uid.slice(-3); // 고유 식별을 위한 뒤 3자리
-  return `${adj} ${animal} (${shortId})`;
-}
-
-// 익명 로그인 상태 감지 및 자동 로그인
+// Google 로그인 상태 감지 및 UI 업데이트
 onAuthStateChanged(auth, (user) => {
   const userArea = document.getElementById("userArea");
+  if (!userArea) return;
+
   if (user) {
     currentUser = user;
-    currentNickname = generateNickname(user.uid);
-    if (userArea) {
-      userArea.innerHTML = `내 작성자명: <strong>${currentNickname}</strong>`;
-    }
+    currentNickname = user.displayName || user.email.split("@")[0] || "사용자";
+
+    userArea.innerHTML = `
+      <span>환영합니다, <strong>${currentNickname}</strong>님!</span>
+      <button id="logoutBtn" class="auth-btn">로그아웃</button>
+    `;
+
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+      try {
+        await signOut(auth);
+      } catch (error) {
+        console.error("로그아웃 실패:", error);
+      }
+    });
   } else {
-    // 세션이 없으면 자동으로 익명 로그인 수행
-    signInAnonymously(auth).catch((error) => {
-      console.error("익명 로그인 실패:", error);
-      if (userArea) {
-        userArea.textContent = "익명 로그인에 실패했습니다. Firebase 콘솔에서 Anonymous 로그인을 활성화했는지 확인하세요.";
+    currentUser = null;
+    currentNickname = "";
+
+    userArea.innerHTML = `
+      <span>로그인이 필요합니다.</span>
+      <button id="loginBtn" class="auth-btn">
+        <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        Google 계정으로 로그인
+      </button>
+    `;
+
+    document.getElementById("loginBtn").addEventListener("click", async () => {
+      try {
+        await signInWithPopup(auth, googleProvider);
+      } catch (error) {
+        console.error("Google 로그인 실패:", error);
+        alert("Google 로그인에 실패했습니다: " + error.message);
       }
     });
   }
@@ -252,6 +263,12 @@ input.addEventListener("keydown", async function (e) {
 
     const text = input.value.trim();
     if (text === "") return;
+
+    // 5글자 이상인지 검사
+    if (text.length < 5) {
+      alert("메모는 5글자 이상 입력해 주세요!");
+      return;
+    }
 
     input.value = "";
     await addMemo(text);
