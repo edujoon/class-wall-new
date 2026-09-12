@@ -26,8 +26,8 @@ export default async function handler(req, res) {
   // 개인정보 보호 (AGENTS.md 규칙: 식별 정보 제외 및 학생 대상 따뜻한 피드백)
   const systemPrompt = "너는 친절하고 격려를 아끼지 않는 초·중등학교 선생님 AI 도우미야. 학생이 작성한 학습 메모나 소감을 읽고, 따뜻하고 긍정적인 격려와 호기심을 북돋아주는 피드백 코멘트를 1~2문장으로 한국어로 친절하게 작성해 줘. 이모지도 적절하게 1~2개 곁들여 줘.";
 
-  // Google AI Studio 공식 지원 모델: gemini-2.5-flash (무료 티어 최신 지원)
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+  // Google AI Studio 안내: gemini-3.6-flash
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
 
   try {
     const response = await fetch(endpoint, {
