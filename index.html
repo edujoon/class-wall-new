@@ -1,54 +1,90 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>우리 반 담벼락</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📌</text></svg>">
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📌</text></svg>">
   <style>
-    body { font-family: sans-serif; margin: 20px; }
-    h1 { font-size: 24px; }
-    .notice { background: #ffe9e9; padding: 10px; }
+    body {
+      font-family: sans-serif;
+      margin: 20px;
+    }
+
+    h1 {
+      font-size: 24px;
+    }
+
+    .notice {
+      background: #ffe9e9;
+      padding: 10px;
+    }
 
     /* 로그인 버튼이 들어올 자리 */
-    #userArea { margin: 10px 0; color: #666; }
+    #userArea {
+      margin: 10px 0;
+      color: #666;
+    }
 
     /* 메모 쓰는 칸 */
-    #writer { margin: 16px 0; }
-    #writer textarea { width: 400px; font-size: 16px; }
+    #writer {
+      margin: 16px 0;
+    }
+
+    #writer textarea {
+      width: 400px;
+      font-size: 16px;
+    }
 
     /* 메모가 붙는 담벼락 (자유 드래그 배치) */
-    #wall { 
-      position: relative; 
-      min-height: 500px; 
-      border: 2px dashed #e0e0e0; 
-      border-radius: 8px; 
+    #wall {
+      position: relative;
+      min-height: 500px;
+      border: 2px dashed #e0e0e0;
+      border-radius: 8px;
       background: #fafafa;
       margin-top: 15px;
       overflow: hidden;
     }
-    .memo { 
+
+    .memo {
       position: absolute;
       box-sizing: border-box;
-      border: 1px solid #ddd; 
-      background: #fffde7; 
-      padding: 12px; 
-      width: 200px; 
-      font-size: 15px; 
-      box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+      border: 1px solid #ddd;
+      background: #fffde7;
+      padding: 12px;
+      width: 200px;
+      font-size: 15px;
+      box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
       cursor: grab;
       user-select: none;
       word-break: break-word;
       transition: box-shadow 0.15s ease;
     }
+
     .memo:active {
       cursor: grabbing;
-      box-shadow: 4px 4px 14px rgba(0,0,0,0.2);
+      box-shadow: 4px 4px 14px rgba(0, 0, 0, 0.2);
     }
-    .memo button { float: right; cursor: pointer; border: none; background: transparent; font-size: 16px; font-weight: bold; color: #888; }
-    .memo button:hover { color: #f44336; }
+
+    .memo button {
+      float: right;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      font-size: 16px;
+      font-weight: bold;
+      color: #888;
+    }
+
+    .memo button:hover {
+      color: #f44336;
+    }
   </style>
 </head>
+
 <body>
 
   <h1>우리 반 담벼락</h1>
@@ -71,4 +107,5 @@
   -->
   <script type="module" src="app.js"></script>
 </body>
+
 </html>

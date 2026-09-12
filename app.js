@@ -13,6 +13,11 @@ import {
   orderBy, 
   onSnapshot 
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+import { 
+  getAuth, 
+  signInAnonymously, 
+  onAuthStateChanged 
+} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDqRv2BXbk_eiboX2rVrh53J4gAK3GaXYo",
@@ -23,10 +28,51 @@ const firebaseConfig = {
   appId: "1:225887089895:web:980fbac8b59741793f5e42"
 };
 
-// Firebase 및 Firestore 초기화
+// Firebase, Firestore, Auth 초기화
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
 const memosCollection = collection(db, "memos");
+
+// --- 로그인 사용자 및 닉네임 관리 ---
+let currentUser = null;
+let currentNickname = "";
+
+// 익명 닉네임 생성기 (친근한 동물 별명 + 고유 해시)
+const ANIMALS = ["호랑이", "토끼", "다람쥐", "사자", "판다", "펭귄", "곰", "여우", "코알라", "사슴", "돌고래", "수달"];
+const ADJECTIVES = ["행복한", "씩씩한", "지혜로운", "다정한", "용감한", "활기찬", "빛나는", "꿈꾸는", "친절한"];
+
+function generateNickname(uid) {
+  let hash = 0;
+  for (let i = 0; i < uid.length; i++) {
+    hash = (hash << 5) - hash + uid.charCodeAt(i);
+    hash |= 0;
+  }
+  const adj = ADJECTIVES[Math.abs(hash) % ADJECTIVES.length];
+  const animal = ANIMALS[Math.abs(hash >> 3) % ANIMALS.length];
+  const shortId = uid.slice(-3); // 고유 식별을 위한 뒤 3자리
+  return `${adj} ${animal} (${shortId})`;
+}
+
+// 익명 로그인 상태 감지 및 자동 로그인
+onAuthStateChanged(auth, (user) => {
+  const userArea = document.getElementById("userArea");
+  if (user) {
+    currentUser = user;
+    currentNickname = generateNickname(user.uid);
+    if (userArea) {
+      userArea.innerHTML = `내 작성자명: <strong>${currentNickname}</strong>`;
+    }
+  } else {
+    // 세션이 없으면 자동으로 익명 로그인 수행
+    signInAnonymously(auth).catch((error) => {
+      console.error("익명 로그인 실패:", error);
+      if (userArea) {
+        userArea.textContent = "익명 로그인에 실패했습니다. Firebase 콘솔에서 Anonymous 로그인을 활성화했는지 확인하세요.";
+      }
+    });
+  }
+});
 
 // --- 메모 목록 (로컬 캐시) ---
 let memos = [];
@@ -48,7 +94,7 @@ function loadMemos() {
   });
 }
 
-// 메모를 새로 씁니다.
+// 메모를 새로 씁니다. (작성자 별명 및 uid 함께 저장)
 async function addMemo(text) {
   try {
     // 새 메모 기본 위치 (약간씩 엇갈리게 배치)
@@ -58,6 +104,8 @@ async function addMemo(text) {
 
     await addDoc(memosCollection, {
       text: text,
+      author: currentNickname || "익명 친구",
+      uid: currentUser ? currentUser.uid : null,
       createdAt: Date.now(),
       x: defaultX,
       y: defaultY
@@ -89,7 +137,7 @@ function render() {
   });
 }
 
-// 메모 한 장 만들기 (드래그 & 드롭 지원)
+// 메모 한 장 만들기 (드래그 & 드롭 및 작성자 뱃지 지원)
 function makeMemo(memo, index) {
   const div = document.createElement("div");
   div.className = "memo";
@@ -104,16 +152,24 @@ function makeMemo(memo, index) {
   // 삭제 버튼
   const del = document.createElement("button");
   del.textContent = "×";
+  del.title = "메모 삭제";
   del.addEventListener("click", function (e) {
     e.stopPropagation(); // 드래그 이벤트 전파 방지
     deleteMemo(memo.id);
   });
   div.appendChild(del);
 
-  // 텍스트 표시
-  const span = document.createElement("span");
-  span.textContent = memo.text;
-  div.appendChild(span);
+  // 작성자 뱃지 표시
+  const authorTag = document.createElement("div");
+  authorTag.className = "author-tag";
+  authorTag.textContent = memo.author ? `✍️ ${memo.author}` : "✍️ 익명 친구";
+  div.appendChild(authorTag);
+
+  // 텍스트 내용 표시
+  const content = document.createElement("div");
+  content.className = "content";
+  content.textContent = memo.text;
+  div.appendChild(content);
 
   // 드래그 & 드롭 이벤트 등록
   let isDragging = false;
