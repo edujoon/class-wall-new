@@ -17,10 +17,36 @@
     #writer { margin: 16px 0; }
     #writer textarea { width: 400px; font-size: 16px; }
 
-    /* 메모가 붙는 담벼락 */
-    #wall { display: flex; flex-wrap: wrap; gap: 10px; }
-    .memo { border: 1px solid #ddd; background: #fffde7; padding: 10px; width: 200px; font-size: 15px; }
-    .memo button { float: right; }
+    /* 메모가 붙는 담벼락 (자유 드래그 배치) */
+    #wall { 
+      position: relative; 
+      min-height: 500px; 
+      border: 2px dashed #e0e0e0; 
+      border-radius: 8px; 
+      background: #fafafa;
+      margin-top: 15px;
+      overflow: hidden;
+    }
+    .memo { 
+      position: absolute;
+      box-sizing: border-box;
+      border: 1px solid #ddd; 
+      background: #fffde7; 
+      padding: 12px; 
+      width: 200px; 
+      font-size: 15px; 
+      box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+      cursor: grab;
+      user-select: none;
+      word-break: break-word;
+      transition: box-shadow 0.15s ease;
+    }
+    .memo:active {
+      cursor: grabbing;
+      box-shadow: 4px 4px 14px rgba(0,0,0,0.2);
+    }
+    .memo button { float: right; cursor: pointer; border: none; background: transparent; font-size: 16px; font-weight: bold; color: #888; }
+    .memo button:hover { color: #f44336; }
   </style>
 </head>
 <body>
