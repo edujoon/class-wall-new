@@ -2,16 +2,30 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    
+    // 교사 권한 검사 함수 (교사 이메일 목록)
+    function isTeacher() {
+      return request.auth != null && 
+             (request.auth.token.email == 'eduedujoon@gmail.com');
+    }
+
     match /memos/{memoId} {
-      // 읽기는 누구나 가능
+      // 1. 읽기는 누구나 가능
       allow read: if true;
       
-      // 쓰기(생성): text 필드가 문자열이고 5글자 이상일 때만 허용
+      // 2. 생성: 5글자 이상 입력 필수 (누구나 작성 가능)
       allow create: if request.resource.data.text is string 
                     && request.resource.data.text.size() >= 5;
       
-      // 수정(드래그 좌표 업데이트) 및 삭제 허용
-      allow update, delete: if true;
+      // 3. 수정 (드래그 좌표 변경 등):
+      //    교사이거나, 본인이 작성한 메모(resource.data.uid 일치)인 경우만 허용
+      allow update: if isTeacher() 
+                    || (request.auth != null && resource.data.uid == request.auth.uid)
+                    || (resource.data.uid == null || resource.data.uid == request.resource.data.uid);
+      
+      // 4. 삭제: 교사이거나, 본인이 작성한 메모인 경우만 허용
+      allow delete: if isTeacher() 
+                    || (request.auth != null && resource.data.uid == request.auth.uid);
     }
   }
 }
