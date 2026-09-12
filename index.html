@@ -123,6 +123,53 @@
     .memo button:hover {
       color: #f44336;
     }
+
+    /* AI 코멘트 버튼 및 코멘트 말풍선 */
+    .ai-btn {
+      margin-top: 8px;
+      padding: 4px 8px;
+      font-size: 11px;
+      background: #e8eaf6;
+      color: #283593;
+      border: 1px solid #c5cae9;
+      border-radius: 4px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s ease;
+    }
+
+    .ai-btn:hover {
+      background: #c5cae9;
+    }
+
+    .ai-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .ai-comment-box {
+      margin-top: 8px;
+      padding: 6px 8px;
+      background: #f3e5f5;
+      border-left: 3px solid #ab47bc;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #4a148c;
+      line-height: 1.4;
+      word-break: break-word;
+    }
+
+    .ai-comment-box .ai-title {
+      font-weight: bold;
+      font-size: 11px;
+      color: #7b1fa2;
+      margin-bottom: 2px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
   </style>
 </head>
 

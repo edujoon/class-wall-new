@@ -252,6 +252,50 @@ function makeMemo(memo, index) {
   content.textContent = memo.text;
   div.appendChild(content);
 
+  // AI 코멘트가 이미 있다면 표시
+  if (memo.aiComment) {
+    const aiBox = document.createElement("div");
+    aiBox.className = "ai-comment-box";
+    aiBox.innerHTML = `<div class="ai-title">🤖 AI 도우미 피드백</div>${memo.aiComment}`;
+    div.appendChild(aiBox);
+  }
+
+  // 교사(Teacher)에게만 AI 코멘트 생성 버튼 노출
+  if (userRole === "teacher") {
+    const aiBtn = document.createElement("button");
+    aiBtn.className = "ai-btn";
+    aiBtn.textContent = memo.aiComment ? "✨ AI 코멘트 다시받기" : "✨ AI 코멘트 달기";
+    aiBtn.addEventListener("click", async function (e) {
+      e.stopPropagation(); // 드래그 방지
+      aiBtn.disabled = true;
+      aiBtn.textContent = "⏳ 코멘트 생성 중...";
+
+      try {
+        const res = await fetch("/api/gemini", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: memo.text })
+        });
+
+        const result = await res.json();
+        if (!res.ok) {
+          throw new Error(result.error || "코멘트 생성에 실패했습니다.");
+        }
+
+        // Firestore에 AI 코멘트 저장
+        await updateDoc(doc(db, "memos", memo.id), {
+          aiComment: result.comment
+        });
+      } catch (err) {
+        console.error("AI 코멘트 요청 오류:", err);
+        alert("AI 코멘트를 가져오지 못했습니다: " + err.message);
+        aiBtn.disabled = false;
+        aiBtn.textContent = "✨ AI 코멘트 달기";
+      }
+    });
+    div.appendChild(aiBtn);
+  }
+
   // 남의 메모인 경우 커서 및 드래그 제한 (학생인 경우 다른 사람 메모 이동 금지)
   if (!canManage) {
     div.style.cursor = "default";
